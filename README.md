@@ -71,7 +71,7 @@ The updater queries Cursor's official stable download API and rewrites [`sources
 
 ## Automation
 
-A daily GitHub Actions workflow lives at [`.github/workflows/cursor-version-bump.yml`](./.github/workflows/cursor-version-bump.yml). It:
+A daily GitHub Actions workflow lives at [`.github/workflows/main.yml`](./.github/workflows/main.yml). It:
 
 - checks Cursor's stable release once per day
 - runs `update.sh`
