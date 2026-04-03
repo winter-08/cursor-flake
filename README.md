@@ -25,7 +25,7 @@ nix profile install .#cursor
 
 ```nix
 {
-  inputs.cursor.url = "path:/path/to/cursor-3-flake";
+  inputs.cursor.url = "path:/path/to/cursor-flake";
 
   outputs = { self, nixpkgs, cursor, ... }: {
     nixosConfigurations.my-host = nixpkgs.lib.nixosSystem {
@@ -45,7 +45,7 @@ nix profile install .#cursor
 
 ```nix
 {
-  inputs.cursor.url = "path:/path/to/cursor-3-flake";
+  inputs.cursor.url = "path:/path/to/cursor-flake";
 
   outputs = { self, nixpkgs, darwin, cursor, ... }: {
     darwinConfigurations.my-mac = darwin.lib.darwinSystem {
