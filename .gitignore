@@ -1,0 +1,8 @@
+!README.md
+!flake.nix
+!package.nix
+!sources.json
+!update.sh
+!.github/
+!.github/workflows/
+!.github/workflows/cursor-version-bump.yml
