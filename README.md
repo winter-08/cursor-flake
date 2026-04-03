@@ -1,4 +1,4 @@
-# cursor-3-flake
+# cursor-flake
 
 Cursor `3.0.9`, packaged as a flake for:
 
