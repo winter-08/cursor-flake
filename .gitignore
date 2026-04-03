@@ -6,3 +6,4 @@
 !.github/
 !.github/workflows/
 !.github/workflows/cursor-version-bump.yml
+!flake.lock
