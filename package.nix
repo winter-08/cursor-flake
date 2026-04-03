@@ -12,6 +12,7 @@
 let
   inherit (stdenv) hostPlatform;
   finalCommandLineArgs = "--update=false " + commandLineArgs;
+  iconName = "cursor";
 
   sourcesJson = lib.importJSON ./sources.json;
   inherit (sourcesJson) version;
@@ -25,54 +26,72 @@ let
   ) sourcesJson.sources;
 
   source = sources.${hostPlatform.system};
-in
-buildVscode rec {
-  inherit useVSCodeRipgrep version vscodeVersion;
-  commandLineArgs = finalCommandLineArgs;
 
-  pname = "cursor";
+  # Upstream ships a 1024x1024 app icon; buildVscode only installs that one size under
+  # hicolor/. Many desktops treat non-standard sizes as missing, so the menu shows no icon.
+  cursor-unwrapped = buildVscode rec {
+    inherit useVSCodeRipgrep version vscodeVersion;
+    commandLineArgs = finalCommandLineArgs;
 
-  executableName = "cursor";
-  longName = "Cursor";
-  shortName = "cursor";
-  libraryName = "cursor";
-  iconName = "cursor";
+    pname = "cursor";
 
-  src =
-    if hostPlatform.isLinux then
-      appimageTools.extract {
-        inherit pname version;
-        src = source;
-      }
-    else
-      source;
+    executableName = "cursor";
+    longName = "Cursor";
+    shortName = "cursor";
+    libraryName = "cursor";
+    inherit iconName;
 
-  extraNativeBuildInputs = lib.optionals hostPlatform.isDarwin [ undmg ];
+    src =
+      if hostPlatform.isLinux then
+        appimageTools.extract {
+          inherit pname version;
+          src = source;
+        }
+      else
+        source;
 
-  sourceRoot =
-    if hostPlatform.isLinux then "${pname}-${version}-extracted/usr/share/cursor" else "Cursor.app";
+    extraNativeBuildInputs = lib.optionals hostPlatform.isDarwin [ undmg ];
 
-  tests = { };
+    sourceRoot =
+      if hostPlatform.isLinux then "${pname}-${version}-extracted/usr/share/cursor" else "Cursor.app";
 
-  updateScript = ./update.sh;
+    tests = { };
 
-  # Editing the binary within the app bundle invalidates the notarized signature on macOS.
-  dontFixup = stdenv.hostPlatform.isDarwin;
+    updateScript = ./update.sh;
 
-  # Cursor ships its own launcher layout, so the generic VSCode path patch is not applicable.
-  patchVSCodePath = false;
+    # Editing the binary within the app bundle invalidates the notarized signature on macOS.
+    dontFixup = stdenv.hostPlatform.isDarwin;
 
-  meta = {
-    description = "AI-powered code editor built on VS Code";
-    homepage = "https://cursor.com";
-    changelog = "https://cursor.com/changelog";
-    license = lib.licenses.unfree;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-    platforms = [
-      "aarch64-linux"
-      "x86_64-linux"
-    ]
-    ++ lib.platforms.darwin;
-    mainProgram = "cursor";
+    # Cursor ships its own launcher layout, so the generic VSCode path patch is not applicable.
+    patchVSCodePath = false;
+
+    meta = {
+      description = "AI-powered code editor built on VS Code";
+      homepage = "https://cursor.com";
+      changelog = "https://cursor.com/changelog";
+      license = lib.licenses.unfree;
+      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+      platforms = [
+        "aarch64-linux"
+        "x86_64-linux"
+      ]
+      ++ lib.platforms.darwin;
+      mainProgram = "cursor";
+    };
   };
-}
+in
+if hostPlatform.isLinux then
+  cursor-unwrapped.overrideAttrs (oldAttrs: {
+    postInstall =
+      (oldAttrs.postInstall or "")
+      + ''
+        icon_src="$out/share/pixmaps/${iconName}.png"
+        for size in 16 24 32 48 64 128 256 512; do
+          mkdir -p "$out/share/icons/hicolor/''${size}x''${size}/apps"
+          magick "$icon_src" -resize "''${size}x''${size}" \
+            "$out/share/icons/hicolor/''${size}x''${size}/apps/${iconName}.png"
+        done
+      '';
+  })
+else
+  cursor-unwrapped
