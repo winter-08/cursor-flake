@@ -32,7 +32,7 @@ jobs:
             nixpkgs#jq \
             nixpkgs#coreutils \
             nixpkgs#nix \
-            nixpkgs#p7zip \
+            nixpkgs#_7zz \
             -c bash ./update.sh
 
       - name: Detect version bump
